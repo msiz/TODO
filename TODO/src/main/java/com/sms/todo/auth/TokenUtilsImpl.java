@@ -1,38 +1,38 @@
 package com.sms.todo.auth;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.token.TokenService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+
+import com.sms.todo.dao.UserDAO;
+import com.sms.todo.model.User;
 
 @Component
 public class TokenUtilsImpl implements TokenUtils
 {
-
+    @Autowired private TokenService service;
+    @Autowired private UserDAO dao;
+    
     @Override
-    public String getToken(UserDetails userDetails)
+    public String createToken(UserDetails userDetails)
     {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String getToken(UserDetails userDetails, Long expiration)
-    {
-        // TODO Auto-generated method stub
-        return null;
+        String key = service.allocateToken(userDetails.getUsername()).getKey();
+        User user = dao.findUserByName(userDetails.getUsername());
+        user.setToken(key);
+        dao.updateToken(user);
+        return key;
     }
 
     @Override
     public boolean validate(String token)
     {
-        // TODO Auto-generated method stub
-        return false;
+        return dao.findUserByToken(token) != null;
     }
 
     @Override
-    public UserDetails getUserFromToken(String token)
+    public User getUserFromToken(String token)
     {
-        // TODO Auto-generated method stub
-        return null;
+        return dao.findUserByToken(token);
     }
-
 }

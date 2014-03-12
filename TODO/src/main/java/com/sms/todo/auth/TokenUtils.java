@@ -2,10 +2,11 @@ package com.sms.todo.auth;
 
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.sms.todo.model.User;
+
 public interface TokenUtils
 {
-    String getToken(UserDetails userDetails);
-    String getToken(UserDetails userDetails, Long expiration);
+    String createToken(UserDetails userDetails);
     boolean validate(String token);
-    UserDetails getUserFromToken(String token);
+    User getUserFromToken(String token);
 }

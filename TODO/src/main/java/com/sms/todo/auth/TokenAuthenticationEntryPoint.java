@@ -19,5 +19,4 @@ public class TokenAuthenticationEntryPoint implements AuthenticationEntryPoint
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, 
                 "Unauthorized: Authentication token was either missing or invalid.");
     }
-
 }

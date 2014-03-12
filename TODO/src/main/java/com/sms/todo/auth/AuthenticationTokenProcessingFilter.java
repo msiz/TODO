@@ -13,10 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 
+import com.sms.todo.model.User;
+
+@Component
 public class AuthenticationTokenProcessingFilter extends GenericFilterBean
 {
     @Autowired TokenUtils tokenUtils;
@@ -35,9 +38,9 @@ public class AuthenticationTokenProcessingFilter extends GenericFilterBean
 
             if (tokenUtils.validate(token))
             {
-                UserDetails userDetails = tokenUtils.getUserFromToken(token);
+                User user = tokenUtils.getUserFromToken(token);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails.getUsername(), userDetails.getPassword());
+                        user.getUsername(), user.getPassword());
                 authentication.setDetails(new WebAuthenticationDetailsSource()
                         .buildDetails((HttpServletRequest) request));
                 SecurityContextHolder.getContext().setAuthentication(
@@ -46,5 +49,15 @@ public class AuthenticationTokenProcessingFilter extends GenericFilterBean
         }
 
         chain.doFilter(request, response);
+    }
+    
+    public void setTokenUtils(TokenUtils tokenUtils)
+    {
+        this.tokenUtils = tokenUtils;
+    }
+    
+    public void setAuthenticationManager(AuthenticationManager authenticationManager)
+    {
+        this.authenticationManager = authenticationManager;
     }
 }
