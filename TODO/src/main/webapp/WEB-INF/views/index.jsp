@@ -16,65 +16,76 @@
 	
 	<script>
 		
+		function showSuccess(text)
+		{
+			$("#error_div").hide();
+			$("#success_div").show();
+			$("#success_field").text(text);
+		}
+	
 		function showError(text)
 		{
+			$("#success_div").hide();
 			$("#error_field").text(text);
 			$("#error_div").show();
 		}
 		
-		function auth(data)
-		{
-			if (data.success !== undefined && data.success !== null)
-			{
-				$("#token").val(data.success);
-				$("#auth_form").toggle();
-				$("#list_table").toggle();
-				$("#error_div").hide();
-				list();
-			}
-			else if (data.error !== undefined)
-			{
-				showError(data.error);
-			}
-		}
-		
-		function list()
-		{
-			$.post("api/list",
-					{
-					    token: $("#token").val()
-					})
-					.success(function(data)
-							{
-								if (data.error !== undefined && data.error !== null)
-								{
-									showError(data.error);
-								}
-								else
-								{
-									for (var i in data)
-									{
-										appendTask(data[i]);
-									}
-								}
-							})
-					.error(error);
-		}
 		
 		function error(XMLHttpRequest, textStatus, errorThrown)
 		{
 			showError(errorThrown);
 		}
 		
+		function ajax(type, url, params, success)
+		{
+			$.ajax(
+			{
+			    type: type,
+			    url: url,
+			    data: params,
+			    headers: 
+		    	{
+			        "Token" : $("#token").val()
+			    }
+			})
+			.success(function(data)
+			{
+				if (data.error !== undefined && data.error !== null)
+				{
+					showError(data.error);
+				}
+				else
+				{
+					if (data.success !== undefined && data.success !== null)
+					{
+						showSuccess(data.success);
+					}
+					$("#error_div").hide();
+					success(data);
+				}
+			})
+			.error(error);
+		}
+		
+		function auth(data)
+		{
+			if (data.data !== undefined && data.data !== null)
+			{
+				$("#token").val(data.data);
+				$("#auth_form").toggle();
+				$("#list_table").toggle();
+				list();
+			}
+		}
+		
 		function authRequest(url)
 		{
-			$.post(url,
-					{
-					    login: $("#login_field").val(),
-					    password: $("#password_field").val()
-					})
-					.success(auth)
-					.error(error);
+			ajax("POST", url, 
+			{ 
+				login: $("#login_field").val(), 
+				password: $("#password_field").val() 
+			}, 
+			auth);
 		}
 	
 		function login()
@@ -89,68 +100,55 @@
 		
 		function logout()
 		{
-			$("#token").val("");
-			$("#table_body tr").remove(); 
-			$("#auth_form").toggle();
-			$("#list_table").toggle();
-			$("#error_div").hide();
+			ajax("POST", "auth/logout", null, function(data)
+			{
+				$("#token").val("");
+				$("#table_body tr").remove(); 
+				$("#auth_form").toggle();
+				$("#list_table").toggle();
+			});
 		}
 		
-		function del(id)
+		function list()
 		{
-			$.post("api/delete",
-					{
-					    token: $("#token").val(),
-					    task: id
-					})
-					.success(function(data)
-							{
-								if (data.error !== undefined && data.error !== null)
-								{
-									showError(data.error);
-								}
-								else
-								{
-									$("#row" + id).remove();
-								}
-							})
-					.error(error);
+			ajax("GET", "api/list", null, function(data)
+			{
+				for (var i in data)
+				{
+					appendTask(data[i]);
+				}
+			});
 		}
 		
 		function add()
 		{
-			$.post("api/create",
-					{
-					    token: $("#token").val(),
-					    task: $("#task").val()
-					})
-					.success(function(data)
-							{
-								if (data.error !== undefined && data.error !== null)
-								{
-									showError(data.error);
-								}
-								else
-								{
-									appendTask(data);
-								}
-							})
-					.error(error);
+			ajax("PUT", "api/list", {task: $("#task").val()}, function(data)
+			{
+				appendTask(data.data);
+			});
+		}
+		
+		function del(id)
+		{
+			ajax("DELETE", "api/list/" + id, null, function(data)
+			{
+				$("#row" + id).remove();
+			});
 		}
 		
 		function appendTask(task)
 		{
 			$("#table_body").append('<tr id="row' + task.id + '"><td class="span8">' + 
-					'<a href="#" id="task' + task.id+ '" data-type="text" data-pk="' + task.id + '" data-name="task" data-url="api/edit" data-original-title="Enter task name">' + task.task + '</a>' 
+					'<a href="#" id="task' + task.id+ '" data-type="text" data-pk="' + task.id + '" data-name="task" data-url="api/list/' + task.id + '" data-original-title="Enter task name">' + task.task + '</a>' 
 					+ '</td><td class="span2">' + 
-					'<a href="#" id="priority' + task.id+ '" data-type="text" data-pk="' + task.id + '" data-name="task" data-url="api/edit" data-original-title="Enter priority">' + task.priority + '</a>' 
+					'<a href="#" id="priority' + task.id+ '" data-type="text" data-pk="' + task.id + '" data-name="task" data-url="api/list/' + task.id + '" data-original-title="Enter priority">' + task.priority + '</a>' 
 					+ '</td><td class="span1">' +
 					'<button class="btn btn-small btn-danger" type="button" onclick="del(' + task.id + ')">Delete</button>'
 					+ '</td></tr>');
 			$("#task" + task.id).editable({
 					params: function(params) {
 					    var data = {};
-					    data['id'] = params.pk;
+					    //data['id'] = params.pk;
 					    data['task'] = params.value;
 					    data['token'] = $("#token").val();
 					    return data;
@@ -159,7 +157,7 @@
 			$("#priority" + task.id).editable({
 					params: function(params) {
 					    var data = {};
-					    data['id'] = params.pk;
+					    //data['id'] = params.pk;
 					    data['priority'] = params.value;
 					    data['token'] = $("#token").val();
 					    return data;
@@ -170,7 +168,18 @@
 					    	return 'This should be a natural number.';
 						}
 					});
-			$("#error_div").hide();
+		}
+		
+		$.fn.editable.defaults.success = function(data) 
+		{ 
+			if (data.error !== undefined && data.error !== null)
+			{
+				showError(data.error);
+			}
+			else if (data.success !== undefined && data.success !== null)
+			{
+				showSuccess(data.success);
+			}
 		}
 		
 	</script>
@@ -179,9 +188,14 @@
 
 	<div class="container">
 		<div class="alert alert-error" id="error_div" style="display:none">
-		  	<button type="button" class="close" data-dismiss="alert" onclick="$('#error_div').hide()">X</button>
+		  	<button type="button" class="close" onclick="$('#error_div').hide()">X</button>
 		  	<h4>Error!</h4>
 		  	<p id="error_field"/>
+		</div>
+		<div class="alert alert-success" id="success_div" style="display:none">
+		  	<button type="button" class="close" onclick="$('#success_div').hide()">X</button>
+		  	<h4>Success!</h4>
+		  	<p id="success_field"/>
 		</div>
 	</div>
 

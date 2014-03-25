@@ -5,6 +5,7 @@ import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -38,7 +39,8 @@ public class AuthController
             UserDetails details = manager.loadUserByUsername(login);
             if (password.equals(details.getPassword()))
             {
-                return Response.success(tokenUtils.createToken(details));
+                String token = tokenUtils.createToken(details.getUsername());
+                return Response.data(messages.getMessage("auth.success", null, locale), token);
             }
             else
             {
@@ -71,12 +73,23 @@ public class AuthController
             {
                 UserDetails details = new User(login, password, Arrays.asList(new Role()));
                 manager.createUser(details);
-                return Response.success(tokenUtils.createToken(details));
+                String token = tokenUtils.createToken(details.getUsername());
+                return Response.data(messages.getMessage("auth.success", null, locale), token);
             }
             else
             {
                 return Response.error(messages.getMessage("auth.user.exists", null, locale));
             }
         }
+    }
+    
+    @RequestMapping(value = "/logout", method = RequestMethod.POST)
+    @ResponseBody
+    public Response logout(Locale locale)
+    {
+        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
+        tokenUtils.deleteToken(userName);
+        SecurityContextHolder.getContext().setAuthentication(null);
+        return Response.success(messages.getMessage("auth.logged.out", null, locale));
     }
 }

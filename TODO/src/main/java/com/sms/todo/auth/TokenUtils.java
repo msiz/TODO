@@ -1,12 +1,11 @@
 package com.sms.todo.auth;
 
-import org.springframework.security.core.userdetails.UserDetails;
-
 import com.sms.todo.model.User;
 
 public interface TokenUtils
 {
-    String createToken(UserDetails userDetails);
+    String createToken(String userName);
+    void deleteToken(String userName);
     boolean validate(String token);
     User getUserFromToken(String token);
 }

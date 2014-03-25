@@ -1,7 +1,6 @@
 package com.sms.todo.auth;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -22,20 +21,24 @@ import com.sms.todo.model.User;
 @Component
 public class AuthenticationTokenProcessingFilter extends GenericFilterBean
 {
+    private static final String TOKEN = "token";
+    
     @Autowired TokenUtils tokenUtils;
     @Autowired AuthenticationManager authenticationManager;
 
     @Override
-    @SuppressWarnings("unchecked")
     public void doFilter(ServletRequest request, ServletResponse response,
             FilterChain chain) throws IOException, ServletException
     {
-        Map<String, String[]> parms = request.getParameterMap();
-
-        if (parms.containsKey("token"))
+        HttpServletRequest req = (HttpServletRequest) request;
+        String token = req.getHeader(TOKEN);
+        if (token == null)
         {
-            String token = parms.get("token")[0];
-
+            token = request.getParameter(TOKEN);
+        }
+        
+        if (token != null && !token.isEmpty())
+        {
             if (tokenUtils.validate(token))
             {
                 User user = tokenUtils.getUserFromToken(token);

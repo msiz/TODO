@@ -7,7 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -25,19 +29,20 @@ public class ListController
     @Autowired private TaskDAO taskDAO;
     @Autowired private MessageSource messages;
 
-    @RequestMapping(value = "/list")
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
     @ResponseBody
-    public List<Task> list(Locale locale)
+    public List<Task> list()
     {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userDAO.findUserByName(userName);
         return user.getTasks();
     }
     
-    @RequestMapping(value = "/create")
+    @RequestMapping(value = "/list", method = RequestMethod.PUT)
     @ResponseBody
-    public Task create(@RequestParam(value = "task") String name)
+    public Response create(@RequestBody MultiValueMap<String,String> body, Locale locale)
     {
+        String name = body.getFirst("task");
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userDAO.findUserByName(userName);
         
@@ -46,13 +51,12 @@ public class ListController
         task.setUser(user);
         
         taskDAO.addTask(task);
-        
-        return task;
+        return Response.data(messages.getMessage("api.task.created", null, locale), task);
     }
     
-    @RequestMapping(value = "/edit")
+    @RequestMapping(value = "/list/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public Response edit(@RequestParam(value = "id") int id, 
+    public Response edit(@PathVariable(value = "id") int id, 
             @RequestParam(value = "task", required = false) String name,
             @RequestParam(value = "priority", required = false) Integer priority,
             Locale locale)
@@ -80,9 +84,9 @@ public class ListController
         return Response.error(messages.getMessage("api.task.not.found", null, locale));
     }
     
-    @RequestMapping(value = "/delete")
+    @RequestMapping(value = "/list/{id}", method = RequestMethod.DELETE)
     @ResponseBody
-    public Object delete(@RequestParam(value = "task") int id, Locale locale)
+    public Object delete(@PathVariable(value = "id") int id, Locale locale)
     {
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userDAO.findUserByName(userName);
