@@ -220,12 +220,12 @@
 
     </div>
     
-   	<div class="container" id="list_table" style="display:none">
+   	<div class="container" id="list_table" style="display:none; padding-top: 10px">
 
 		<form class="form-inline">
 			<div class="form-group">
 			<label class="control-label">Your token:</label>
-	        <input type="text" placeholder="Token" id="token" disabled="disabled" />
+	        <input type="text" placeholder="Token" id="token" disabled="disabled" style="width: 83%" />
 	        <button class="btn btn-small btn-warning" type="button" onclick="logout()">Logout</button>
 	        </div>
         </form>
@@ -233,8 +233,8 @@
         <form class="form-inline">
 			<div class="form-group">
 			<label class="control-label" for="task">Task:</label>
-	        <input type="text" placeholder="Task name" id="task" />
-	        <button class="btn btn-success" type="button" onclick="add()">Create</button>
+	        <input type="text" placeholder="Task name" id="task" style="width: 87%" />
+	        <button class="btn btn-small btn-success" type="button" onclick="add()">Create</button>
 	        </div>
         </form>
         
