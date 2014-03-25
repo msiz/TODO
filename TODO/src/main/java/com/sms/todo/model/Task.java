@@ -17,6 +17,9 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 @Table(name = "todo")
 public class Task
 {
+    public static final int MIN_PRIORITY = 0;
+    public static final int MAX_PRIORITY = 10;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")

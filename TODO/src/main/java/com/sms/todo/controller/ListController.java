@@ -43,6 +43,11 @@ public class ListController
     public Response create(@RequestBody MultiValueMap<String,String> body, Locale locale)
     {
         String name = body.getFirst("task");
+        if (name == null || name.isEmpty())
+        {
+            return Response.error(messages.getMessage("api.task.empty", null, locale));
+        }
+        
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userDAO.findUserByName(userName);
         
@@ -70,11 +75,23 @@ public class ListController
             {
                 if (name != null)
                 {
+                    if (name.isEmpty())
+                    {
+                        return Response.error(messages.getMessage("api.task.empty", null, locale));
+                    }
                     task.setTask(name);
                 }
-                if (priority != null)
+                else if (priority != null)
                 {
+                    if (priority < Task.MIN_PRIORITY || priority > Task.MAX_PRIORITY)
+                    {
+                        return Response.error(messages.getMessage("api.task.wrong.priority", null, locale));
+                    }
                     task.setPriority(priority);
+                }
+                else
+                {
+                    return Response.error(messages.getMessage("api.task.no.changes", null, locale));
                 }
                 taskDAO.changeTask(task);
                 return Response.success(messages.getMessage("api.task.updated", null, locale));

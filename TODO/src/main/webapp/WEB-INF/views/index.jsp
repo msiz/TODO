@@ -74,6 +74,8 @@
 				$("#token").val(data.data);
 				$("#auth_form").toggle();
 				$("#list_table").toggle();
+				$("#login_field").val("");
+				$("#password_field").val("");
 				list();
 			}
 		}
@@ -125,6 +127,7 @@
 			ajax("PUT", "api/list", {task: $("#task").val()}, function(data)
 			{
 				appendTask(data.data);
+				$("#task").val("");
 			});
 		}
 		
@@ -145,29 +148,37 @@
 					+ '</td><td class="span1">' +
 					'<button class="btn btn-small btn-danger" type="button" onclick="del(' + task.id + ')">Delete</button>'
 					+ '</td></tr>');
-			$("#task" + task.id).editable({
-					params: function(params) {
-					    var data = {};
-					    //data['id'] = params.pk;
-					    data['task'] = params.value;
-					    data['token'] = $("#token").val();
-					    return data;
-					  }
-					});
-			$("#priority" + task.id).editable({
-					params: function(params) {
-					    var data = {};
-					    //data['id'] = params.pk;
-					    data['priority'] = params.value;
-					    data['token'] = $("#token").val();
-					    return data;
-					  },
-					validate: function(value) {
-						var n = ~~Number(value);
-					    if(String(n) !== value || n < 0)
-					    	return 'This should be a natural number.';
-						}
-					});
+			$("#task" + task.id).editable(
+			{
+				params: function(params) 
+				{
+				    var data = {};
+				    data['task'] = params.value;
+				    data['token'] = $("#token").val();
+				    return data;
+			  	},
+				validate: function(value) 
+				{
+				    if(value == "")
+				    	return 'Task name cannot be empty.';
+				}
+			});
+			$("#priority" + task.id).editable(
+			{
+				params: function(params) 
+				{
+				    var data = {};
+				    data['priority'] = params.value;
+				    data['token'] = $("#token").val();
+				    return data;
+			  	},
+				validate: function(value) 
+				{
+					var n = ~~Number(value);
+				    if(String(n) !== value || n < 0)
+				    	return 'This should be a natural number.';
+				}
+			});
 		}
 		
 		$.fn.editable.defaults.success = function(data) 

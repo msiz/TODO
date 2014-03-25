@@ -34,6 +34,14 @@ public class AuthController
             @RequestParam(value = "password") String password,
             Locale locale)
     {
+        if (login.isEmpty())
+        {
+            return Response.error(messages.getMessage("auth.user.empty", null, locale));
+        }
+        else if (password.isEmpty())
+        {
+            return Response.error(messages.getMessage("auth.password.empty", null, locale));
+        }
         try
         {
             UserDetails details = manager.loadUserByUsername(login);
