@@ -80,9 +80,9 @@
 			}
 		}
 		
-		function authRequest(url)
+		function authRequest(type)
 		{
-			ajax("POST", url, 
+			ajax(type, "auth/", 
 			{ 
 				login: $("#login_field").val(), 
 				password: $("#password_field").val() 
@@ -92,12 +92,12 @@
 	
 		function login()
 		{
-			authRequest("auth/login");
+			authRequest("GET");
 		}
 		
 		function register()
 		{
-			authRequest("auth/register");
+			authRequest("PUT");
 		}
 		
 		function logout()
@@ -192,6 +192,8 @@
 				showSuccess(data.success);
 			}
 		}
+		
+		$.fn.editable.defaults.error = error;
 		
 	</script>
 </head>

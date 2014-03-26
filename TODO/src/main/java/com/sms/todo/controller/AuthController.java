@@ -11,6 +11,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,7 +30,7 @@ public class AuthController
     @Autowired private UserDetailsManager manager;
     @Autowired private MessageSource messages;
     
-    @RequestMapping(value = "/login", method = RequestMethod.POST)
+    @RequestMapping(value = "/", method = RequestMethod.GET)
     @ResponseBody
     public Response login(@RequestParam(value = "login") String login, 
             @RequestParam(value = "password") String password,
@@ -48,7 +50,7 @@ public class AuthController
             if (password.equals(details.getPassword()))
             {
                 String token = tokenUtils.createToken(details.getUsername());
-                return Response.data(messages.getMessage("auth.success", null, locale), token);
+                return Response.data(messages.getMessage("auth.login.success", null, locale), token);
             }
             else
             {
@@ -61,17 +63,19 @@ public class AuthController
         }
     }
     
-    @RequestMapping(value = "/register", method = RequestMethod.POST)
+    @RequestMapping(value = "/", method = RequestMethod.PUT)
     @ResponseBody
-    public Response register(@RequestParam(value = "login") String login, 
-            @RequestParam(value = "password") String password,
+    public Response register(@RequestBody MultiValueMap<String,String> body, 
             Locale locale)
     {
-        if (login.isEmpty())
+        String login = body.getFirst("login");
+        String password = body.getFirst("password");
+        
+        if (login == null || login.isEmpty())
         {
             return Response.error(messages.getMessage("auth.user.empty", null, locale));
         }
-        else if (password.isEmpty())
+        else if (password == null || password.isEmpty())
         {
             return Response.error(messages.getMessage("auth.password.empty", null, locale));
         }
@@ -82,7 +86,7 @@ public class AuthController
                 UserDetails details = new User(login, password, Arrays.asList(new Role()));
                 manager.createUser(details);
                 String token = tokenUtils.createToken(details.getUsername());
-                return Response.data(messages.getMessage("auth.success", null, locale), token);
+                return Response.data(messages.getMessage("auth.register.success", null, locale), token);
             }
             else
             {
