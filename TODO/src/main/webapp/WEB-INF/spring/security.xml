@@ -10,7 +10,8 @@
     
 	<security:http realm="Protected API" use-expressions="true" create-session="stateless" entry-point-ref="tokenAuthenticationEntryPoint">
 	    <security:intercept-url pattern="/" access="permitAll"/>
-	    <security:intercept-url pattern="/auth/**" access="permitAll"/>
+	    <security:intercept-url pattern="/auth" access="permitAll"/>
+	    <security:intercept-url pattern="/auth/logout" access="isAuthenticated()"/>
 	    <security:intercept-url pattern="/api/**" access="isAuthenticated()" />
 	    <security:custom-filter position="PRE_AUTH_FILTER" ref="authenticationTokenProcessingFilter" />
 	</security:http>
@@ -32,15 +33,6 @@
 	<beans:bean id="secureRandom" 
 		class="java.security.SecureRandom">
 	</beans:bean>
-	
-	<!-- security:authentication-manager alias="authenticationManager">
-      <security:authentication-provider>
-         <security:user-service id="userService">
-            <security:user name="temporary" password="temporary" authorities="ROLE_ADMIN"/>
-            <security:user name="user" password="user" authorities="ROLE_USER"/>
-         </security:user-service>
-      </security:authentication-provider>
-   	</security:authentication-manager-->
    	
    	<security:authentication-manager alias="authenticationManager">
 	    <security:authentication-provider>
