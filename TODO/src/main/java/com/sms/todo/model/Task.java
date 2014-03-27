@@ -19,6 +19,7 @@ public class Task
 {
     public static final int MIN_PRIORITY = 0;
     public static final int MAX_PRIORITY = 10;
+    public static final int MAX_LENGTH = 100;
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

@@ -16,6 +16,9 @@ import javax.persistence.Table;
 @Table(name = "users")
 public class User
 {
+    public static final int MAX_USERNAME_LENGTH = 20;
+    public static final int MAX_PASSWORD_LENGTH = 20;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")

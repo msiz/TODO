@@ -47,6 +47,10 @@ public class ListController
         {
             return Response.error(messages.getMessage("api.task.empty", null, locale));
         }
+        else if (name.length() > Task.MAX_LENGTH)
+        {
+            return Response.error(messages.getMessage("api.task.too.long", null, locale));
+        }
         
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userDAO.findUserByName(userName);
@@ -78,6 +82,10 @@ public class ListController
                     if (name.isEmpty())
                     {
                         return Response.error(messages.getMessage("api.task.empty", null, locale));
+                    }
+                    else if (name.length() > Task.MAX_LENGTH)
+                    {
+                        return Response.error(messages.getMessage("api.task.too.long", null, locale));
                     }
                     task.setTask(name);
                 }

@@ -79,6 +79,14 @@ public class AuthController
         {
             return Response.error(messages.getMessage("auth.password.empty", null, locale));
         }
+        else if (login.length() > com.sms.todo.model.User.MAX_USERNAME_LENGTH)
+        {
+            return Response.error(messages.getMessage("auth.user.too.long", null, locale));
+        }
+        else if (password.length() > com.sms.todo.model.User.MAX_PASSWORD_LENGTH)
+        {
+            return Response.error(messages.getMessage("auth.password.too.long", null, locale));
+        }
         else
         {
             if (!manager.userExists(login))

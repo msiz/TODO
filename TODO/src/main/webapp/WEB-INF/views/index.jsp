@@ -1,3 +1,5 @@
+<%@page import="com.sms.todo.model.User"%>
+<%@page import="com.sms.todo.model.Task"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page session="false" %>
@@ -80,24 +82,27 @@
 			}
 		}
 		
-		function authRequest(type)
+		function authRequest(type, checkMax)
 		{
-			ajax(type, "auth/", 
-			{ 
-				login: $("#login_field").val(), 
-				password: $("#password_field").val() 
-			}, 
-			auth);
+			if (validateUserName(checkMax) && validatePassword(checkMax))
+			{
+				ajax(type, "auth/", 
+				{ 
+					login: $("#login_field").val(), 
+					password: $("#password_field").val() 
+				}, 
+				auth);
+			}
 		}
 	
 		function login()
 		{
-			authRequest("GET");
+			authRequest("GET", false);
 		}
 		
 		function register()
 		{
-			authRequest("PUT");
+			authRequest("PUT", true);
 		}
 		
 		function logout()
@@ -124,11 +129,19 @@
 		
 		function add()
 		{
-			ajax("PUT", "api/list", {task: $("#task").val()}, function(data)
+			var result = validateTaskLength($("#task").val());
+			if (result !== undefined)
 			{
-				appendTask(data.data);
-				$("#task").val("");
-			});
+				showError(result);
+			}
+			else
+			{
+				ajax("PUT", "api/list", {task: $("#task").val()}, function(data)
+				{
+					appendTask(data.data);
+					$("#task").val("");
+				});
+			}
 		}
 		
 		function del(id)
@@ -157,11 +170,7 @@
 				    data['token'] = $("#token").val();
 				    return data;
 			  	},
-				validate: function(value) 
-				{
-				    if(value == "")
-				    	return 'Task name cannot be empty.';
-				}
+				validate: validateTaskLength
 			});
 			$("#priority" + task.id).editable(
 			{
@@ -172,13 +181,57 @@
 				    data['token'] = $("#token").val();
 				    return data;
 			  	},
-				validate: function(value) 
-				{
-					var n = ~~Number(value);
-				    if(String(n) !== value || n < 0)
-				    	return 'This should be a natural number.';
-				}
+				validate: validateTaskPriority
 			});
+		}
+		
+		function validateTaskLength(value)
+		{
+			if(value == "")
+		    	return 'Task name cannot be empty.';
+		    if(value.length > <%= Task.MAX_LENGTH %>)
+		    	return 'Task name is too long. Maximal length: <%= Task.MAX_LENGTH %>.';
+		}
+		
+		function validateTaskPriority(value)
+		{
+			var n = ~~Number(value);
+		    if(String(n) !== value || n < <%= Task.MIN_PRIORITY %> || n > <%= Task.MAX_PRIORITY %>)
+		    	return 'Priority should be a number between <%= Task.MIN_PRIORITY %> and <%= Task.MAX_PRIORITY %>.';
+		}
+		
+		function validateLength(value, max, emptyMessage, longMessage, checkMax)
+		{
+			var error = null;
+			
+			if (value.length == 0)
+			{
+				error = emptyMessage;
+			}
+			else if (checkMax && value.length > max)
+			{
+				error = longMessage;
+			}
+			
+			if (error !== null)
+			{
+				showError(error);
+				return false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+		
+		function validateUserName(checkMax)
+		{
+			return validateLength($("#login_field").val(), <%= User.MAX_USERNAME_LENGTH%>, "Login cannot be empty.", "Login is too long.", checkMax);
+		}
+		
+		function validatePassword(checkMax)
+		{
+			return validateLength($("#password_field").val(), <%= User.MAX_PASSWORD_LENGTH%>, "Password cannot be empty.", "Password is too long.", checkMax);
 		}
 		
 		$.fn.editable.defaults.success = function(data) 
@@ -191,7 +244,7 @@
 			{
 				showSuccess(data.success);
 			}
-		}
+		};
 		
 		$.fn.editable.defaults.error = error;
 		
