@@ -77,7 +77,8 @@ public class ListController
         {
             if (task.getId() == id)
             {
-                if (name != null)
+                boolean changed = false;
+                if (name != null && !name.equals(task.getTask()))
                 {
                     if (name.isEmpty())
                     {
@@ -88,16 +89,18 @@ public class ListController
                         return Response.error(messages.getMessage("api.task.too.long", null, locale));
                     }
                     task.setTask(name);
+                    changed = true;
                 }
-                else if (priority != null)
+                if (priority != null && priority != task.getPriority())
                 {
                     if (priority < Task.MIN_PRIORITY || priority > Task.MAX_PRIORITY)
                     {
                         return Response.error(messages.getMessage("api.task.wrong.priority", null, locale));
                     }
                     task.setPriority(priority);
+                    changed = true;
                 }
-                else
+                if (!changed)
                 {
                     return Response.error(messages.getMessage("api.task.no.changes", null, locale));
                 }
